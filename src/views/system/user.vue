@@ -38,8 +38,8 @@
 			<el-table-column type="index" label="ID" width="60"></el-table-column>
 			<el-table-column prop="name" label="姓名"></el-table-column>
       <el-table-column prop="user_name" label="用户名"></el-table-column>
-      <el-table-column prop="status" label="状态" :formatter="formatStatus" width="60"></el-table-column>
-      <el-table-column prop="roles" label="角色" :formatter="formatRoles"></el-table-column>
+      <el-table-column prop="status" label="状态" :formatter="formatStatus"></el-table-column>
+      <!-- <el-table-column prop="roles" label="角色" :formatter="formatRoles"></el-table-column> -->
       <el-table-column prop="last_ip" label="最后登录ip"></el-table-column>
 			<el-table-column prop="created_at" label="创建时间"></el-table-column>
 			<el-table-column prop="updated_at" label="最后登录时间" sortable></el-table-column>
@@ -96,7 +96,7 @@
 					<el-input v-model="form.re_password" type="password" auto-complete="off"></el-input>
 				</el-form-item>
 
-        <el-form-item label="角色" prop="roles">
+        <el-form-item label="角色" prop="roles" v-show="false">
           <el-radio-group v-model="form.user_roles">
             <el-radio v-for="role in total_roles" :label="role.id" :key="role.id">{{role.name}}</el-radio>
           </el-radio-group>
@@ -344,7 +344,7 @@ export default {
         status: 1,
         password: '',
         re_password: '',
-        user_roles: []
+        user_roles: 1
       }
 
       this.formRules.password[0].required = true

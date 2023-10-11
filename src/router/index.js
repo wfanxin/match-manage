@@ -35,9 +35,9 @@ export const constantRouterMap = [
     children: [
       {
         path: 'welcome',
-        name: '年统计',
+        name: '首页',
         component: () => import('@/views/common/welcome'),
-        meta: { title: '年统计', icon: 'documentation' }
+        meta: { title: '首页', icon: 'documentation' }
       }
     ]
   },
@@ -60,62 +60,6 @@ export default new Router({
 })
 export const asyncRouterMap = [
   {
-    path: '/lease',
-    component: Layout,
-    redirect: 'noredirect',
-    name: '租赁管理',
-    key: 'Lease',
-    meta: {
-      title: '租赁管理',
-      icon: 'chart'
-    },
-    children: [{
-      path: 'federation',
-      component: () => import('@/views/lease/federation'),
-      name: '公司联盟',
-      key: '@Get:lv_lease_federation_list',
-      meta: {
-        title: '公司联盟',
-        icon: 'documentation'
-      }
-    }, {
-      path: 'company',
-      component: () => import('@/views/lease/company'),
-      name: '租赁公司',
-      key: '@Get:lv_lease_company_list',
-      meta: {
-        title: '租赁公司',
-        icon: 'documentation'
-      }
-    }, {
-      path: 'house',
-      component: () => import('@/views/lease/house'),
-      name: '租赁合同',
-      key: '@Get:lv_lease_house_list',
-      meta: {
-        title: '租赁合同',
-        icon: 'documentation'
-      }
-    }, {
-      path: 'approval',
-      component: () => import('@/views/lease/approval'),
-      name: '合同审批',
-      key: '@Get:lv_lease_approval_list',
-      meta: {
-        title: '合同审批',
-        icon: 'documentation'
-      }
-    }, {
-      path: 'notice',
-      component: () => import('@/views/lease/notice'),
-      name: '公告信息',
-      key: '@Get:lv_lease_notice_list',
-      meta: {
-        title: '公告信息',
-        icon: 'documentation'
-      }
-    }]
-  }, {
     path: '/system',
     component: Layout,
     redirect: 'noredirect',
@@ -130,7 +74,7 @@ export const asyncRouterMap = [
       component: () => import('@/views/system/permission'),
       name: '权限列表',
       key: '@Get:lv_permissions',
-      // hidden: true,
+      hidden: true,
       meta: {
         title: '权限列表',
         icon: 'lock'
@@ -141,7 +85,7 @@ export const asyncRouterMap = [
       component: () => import('@/views/system/role-table'), // 表格
       name: '角色列表',
       key: '@Get:lv_roles',
-      // hidden: true,
+      hidden: true,
       meta: {
         title: '角色列表',
         icon: 'table'
@@ -160,7 +104,7 @@ export const asyncRouterMap = [
       component: () => import('@/views/system/log'),
       name: '操作日志',
       key: '@Get:lv_logs',
-      // hidden: true,
+      hidden: true,
       meta: {
         title: '操作日志',
         icon: 'form'

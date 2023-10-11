@@ -63,9 +63,6 @@
         </el-form-item>
 			</el-form>
 		</el-dialog>
-
-    <!-- 查看租赁合同明细 -->
-    <HouseContractDetail ref="HouseContractDetail" @db-click="closeContractDetail"></HouseContractDetail>
   </el-menu>
 </template>
 
@@ -78,10 +75,8 @@ import nxFullScreen from '@/components/nx-full-screen/index'
 import nxLangSelect from '@/components/nx-lang-select/index'
 import nxGithub from '@/components/nx-github/index'
 import nxSkin from '@/components/nx-skin/index'
-import HouseContractDetail from '@/components/lease/house-contract-detail'
 import store from '@/store'
 import { changePwd } from '@/api/user-table'
-import { getNotice, read } from '@/api/notice'
 export default {
   data() {
     var checkPwd = (rule, value, callback) => {
@@ -176,7 +171,6 @@ export default {
   },
   name: 'navBar',
   components: {
-    HouseContractDetail,
     nxBreadcrumb,
     nxHamburger,
     // nxHelp,
@@ -234,68 +228,6 @@ export default {
       this.$store.dispatch('LogOut').then(() => {
         location.reload() // In order to re-instantiate the vue-router object to avoid bugs
       })
-    },
-    getNotice() {
-      setTimeout(() => {
-        getNotice({}).then(res => {
-          if (res.code === 0 && res.data) {
-            const h = this.$createElement
-            const button = h('el-button', {
-              style: {
-                float: 'right'
-              },
-              props: {
-                type: 'primary',
-                size: 'mini'
-              },
-              on: {
-                click: () => {
-                  this.notification.close()
-                  this.showDetail(res.data)
-                }
-              }
-            }, res.data.type === 1 ? '知道了' : '查看')
-            // const createAt = h('div', {}, res.data.created_at)
-            const content = h('div', {
-              style: {
-                margin: '10px 0'
-              }
-            }, res.data.content)
-            this.notification = this.$notify({
-              title: res.data.title,
-              dangerouslyUseHTMLString: true,
-              message: h('div', {
-                style: {
-                  width: '280px'
-                }
-              }, [
-                // createAt,
-                content,
-                button
-              ]),
-              showClose: false,
-              duration: 0
-            })
-          } else {
-            this.getNotice()
-          }
-        }).catch(() => { this.getNotice() })
-      }, 3000)
-    },
-    showDetail(row) {
-      if (row.type === 1) {
-        this.read(row.id) // 已读，审批通知直接已读
-      } else {
-        this.$refs['HouseContractDetail'].handleHouseContractDetail(row)
-      }
-    },
-    closeContractDetail(row) {
-      this.read(row.id) // 已读，缴费通知，查看后关闭再设为已读
-    },
-    read(id) {
-      read({ id: id }).then(res => {
-        this.getNotice()
-      }).catch(() => { this.getNotice() })
     }
   },
   mounted() {
@@ -303,8 +235,6 @@ export default {
     setInterval(function() {
       that.cur_date = window.localStorage.getItem('cur_date')
     }, 1000)
-
-    this.getNotice()
   }
 }
 </script>
