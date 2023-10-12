@@ -272,8 +272,14 @@ export default {
       this.dialogTitle = '修改'
       this.editForm = {
         id: row.id,
-        pid: row.pid,
-        name: row.name
+        ptag_id: row.ptag_id,
+        tag_id: row.tag_id,
+        match_play: row.match_play,
+        match_score: row.match_score,
+        match_result: row.match_result,
+        match_half_audience: row.match_half_audience,
+        match_type: row.match_type,
+        match_data: row.match_data
       }
       this.dialogFormVisible = true
     },
