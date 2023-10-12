@@ -25,22 +25,22 @@ import Layout from '../views/layout/Layout'
 export const constantRouterMap = [
   {
     path: '',
-    redirect: '/welcome/welcome'
+    redirect: '/match/match'
   },
-  {
-    path: '/welcome',
-    component: Layout,
-    name: '首页',
-    meta: { title: '首页', icon: 'dashboard' },
-    children: [
-      {
-        path: 'welcome',
-        name: '首页',
-        component: () => import('@/views/common/welcome'),
-        meta: { title: '首页', icon: 'documentation' }
-      }
-    ]
-  },
+  // {
+  //   path: '/welcome',
+  //   component: Layout,
+  //   name: '首页',
+  //   meta: { title: '首页', icon: 'dashboard' },
+  //   children: [
+  //     {
+  //       path: 'welcome',
+  //       name: '首页',
+  //       component: () => import('@/views/common/welcome'),
+  //       meta: { title: '首页', icon: 'documentation' }
+  //     }
+  //   ]
+  // },
   { path: '/login', component: () => import('@/views/login'), name: '登录', hidden: true },
   { path: '/401', component: () => import('@/views/error-page/401'), name: 'page401', hidden: true, meta: { title: 'page401', noCache: true }},
   { path: '/404', component: () => import('@/views/error-page/404'), name: 'page404', hidden: true, meta: { title: 'page404', noCache: true }},
@@ -60,6 +60,35 @@ export default new Router({
 })
 export const asyncRouterMap = [
   {
+    path: '/match',
+    component: Layout,
+    redirect: 'noredirect',
+    name: '比赛管理',
+    key: 'Match',
+    meta: {
+      title: '比赛管理',
+      icon: 'edit'
+    },
+    children: [{
+      path: 'match',
+      component: () => import('@/views/match/match'),
+      name: '比赛列表',
+      key: '@Get:lv_match_match_list',
+      meta: {
+        title: '比赛列表',
+        icon: 'documentation'
+      }
+    }, {
+      path: 'tag',
+      component: () => import('@/views/match/tag'),
+      name: '标签列表',
+      key: '@Get:lv_match_tag_list',
+      meta: {
+        title: '标签列表',
+        icon: 'documentation'
+      }
+    }]
+  }, {
     path: '/system',
     component: Layout,
     redirect: 'noredirect',
