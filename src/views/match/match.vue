@@ -39,7 +39,7 @@
       </el-col>
     </el-row>
 
-    <el-row :gutter="20" v-infinite-scroll="load" style="height: calc(100vh - 200px); overflow: auto;">
+    <el-row :gutter="20" v-infinite-scroll="load" infinite-scroll-distance="20" style="height: calc(100vh - 200px); overflow: auto;">
       <el-col :span="12" v-for="item in data" :key="item.id">
         <el-card class="box-card" style="margin-bottom: 20px;">
           <div slot="header" class="clearfix">
@@ -49,12 +49,19 @@
             <el-button style="float: right; padding: 3px 0;" type="text" @click="handleEdit(item)">修改</el-button>
           </div>
           <table border="0" cellspacing="0" class="table-box">
-            <tr>
-              <td>{{ item.match_play }}</td>
-              <td>{{ item.match_score }}</td>
-              <td>{{ item.match_result }}</td>
-              <td>{{ item.match_half_audience }}</td>
-              <td>{{ item.match_type }}</td>
+            <tr v-if="item.match_result.indexOf('让') !== -1">
+              <td class="td-black">{{ item.match_play }}</td>
+              <td class="td-black">{{ item.match_score }}</td>
+              <td class="td-black">{{ item.match_result }}</td>
+              <td class="td-black">{{ item.match_half_audience }}</td>
+              <td class="td-black">{{ item.match_type }}</td>
+            </tr>
+            <tr v-else>
+              <td class="td-gray">{{ item.match_play }}</td>
+              <td class="td-gray">{{ item.match_score }}</td>
+              <td class="td-gray">{{ item.match_result }}</td>
+              <td class="td-gray">{{ item.match_half_audience }}</td>
+              <td class="td-gray">{{ item.match_type }}</td>
             </tr>
             <template v-for="(childItem, childIndex) in item.match_data">
               <tr :key="childIndex + '-1'">
@@ -80,7 +87,8 @@
           </table>
         </el-card>
       </el-col>
-      <div v-if="data.length === 0" style="text-align: center; line-height: 50px; color: #909399;">暂无数据</div>
+      <div v-if="loading && data.length > 0" style="text-align: center; color: #909399;">加载中...</div>
+      <div v-if="!loading && data.length === 0" style="text-align: center; line-height: 50px; color: #909399;">暂无数据</div>
     </el-row>
 
     <!--编辑界面-->
@@ -184,6 +192,7 @@ export default {
       dialogTitle: '',
       editForm: {},
       loading: false,
+      id: '',
       data: [],
       tag_list: [],
       tag_sub_list: [],
@@ -194,6 +203,7 @@ export default {
   methods: {
     // 搜索方法
     handleSearch() {
+      this.id = ''
       this.getList()
     },
     changePid() {
@@ -254,7 +264,7 @@ export default {
                 type: 'success'
               })
               this.dialogFormVisible = false
-              this.getList()
+              this.handleSearch()
             }
           }).catch(() => { this.addIsLoading = false })
         }
@@ -359,10 +369,16 @@ export default {
       this.$refs['form'].resetFields()
     },
     load() {
-      // this.getList()
+      if (this.data.length === 0) {
+        this.id = ''
+      } else {
+        this.id = this.data[this.data.length - 1].id
+      }
+      alert(1)
     },
     getList() {
       const params = Object.assign({}, this.filters)
+      params.id = this.id
       this.loading = true
       list(params).then(res => {
         this.loading = false
@@ -378,7 +394,7 @@ export default {
   },
   mounted() {
     this.roleKey = fun_getRole()
-    this.getList()
+    this.handleSearch()
   }
 }
 </script>
@@ -410,5 +426,11 @@ export default {
 .td-orange {
   background-color: orange;
   padding: 2px 5px;
+}
+.td-black {
+  color: black;
+}
+.td-gray {
+  color: gray;
 }
 </style>
