@@ -16,6 +16,7 @@
           </el-form-item>
           <el-form-item>
             <el-select
+              style="width: 250px;"
               v-model="filters.ids"
               multiple
               collapse-tags
@@ -38,27 +39,49 @@
       </el-col>
     </el-row>
 
-    <!--列表-->
-    <el-table v-loading="loading" :data="data" highlight-current-row style="width: 100%;">
-      <el-table-column prop="name" label="子类名称">
-      </el-table-column>
-      <el-table-column prop="pname" label="标签大类">
-      </el-table-column>
-      <el-table-column prop="created_at" label="添加时间">
-      </el-table-column>
-      <el-table-column prop="updated_at" label="修改时间">
-      </el-table-column>
-      <el-table-column label="操作" width="160">
-        <template slot-scope="scope">
-          <el-button size="small" @click="handleEdit(scope.row)">修改</el-button>
-          <el-button type="danger" size="small" @click="handleDel(scope.row)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-	  <!--页码-->
-    <el-pagination background layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page.sync="page" :page-size="pageSize" :total="total" style="text-align:center;margin-top:10px">
-    </el-pagination>
+    <el-row :gutter="20" v-infinite-scroll="load" style="height: calc(100vh - 200px); overflow: auto;">
+      <el-col :span="12" v-for="item in data" :key="item.id">
+        <el-card class="box-card" style="margin-bottom: 20px;">
+          <div slot="header" class="clearfix">
+            <span>{{ getSubTagName(item.tag_id) }}<span style="font-size: 12px; color: #909399;">({{ getTagName(item.ptag_id) }})</span></span>
+            <el-button style="float: right; padding: 3px 0; color: #F56C6C;" type="text" @click="handleDel(item)">删除</el-button>
+            <div style="float: right; padding: 3px 5px; color: #DCDFE6;">|</div>
+            <el-button style="float: right; padding: 3px 0;" type="text" @click="handleEdit(item)">修改</el-button>
+          </div>
+          <table border="0" cellspacing="0" class="table-box">
+            <tr>
+              <td>{{ item.match_play }}</td>
+              <td>{{ item.match_score }}</td>
+              <td>{{ item.match_result }}</td>
+              <td>{{ item.match_half_audience }}</td>
+              <td>{{ item.match_type }}</td>
+            </tr>
+            <template v-for="(childItem, childIndex) in item.match_data">
+              <tr :key="childIndex + '-1'">
+                <td rowspan="3">{{ getName(childItem.value) }}</td>
+                <td>{{ childItem.list[0].value1 }}</td>
+                <td>{{ childItem.list[0].value2 }}</td>
+                <td>{{ childItem.list[0].value3 }}</td>
+                <td>{{ childItem.list[0].value4 }}</td>
+              </tr>
+              <tr :key="childIndex + '-2'">
+                <td><span :class="getClass(childItem.list[0].value1, childItem.list[1].value1)">{{ childItem.list[1].value1 }}</span></td>
+                <td><span :class="getClass(childItem.list[0].value2, childItem.list[1].value2)">{{ childItem.list[1].value2 }}</span></td>
+                <td><span :class="getClass(childItem.list[0].value3, childItem.list[1].value3)">{{ childItem.list[1].value3 }}</span></td>
+                <td>{{ childItem.list[1].value4 }}</td>
+              </tr>
+              <tr :key="childIndex + '-3'">
+                <td>{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</td>
+                <td>{{ subtract(childItem.list[0].value2, childItem.list[1].value2) }}</td>
+                <td>{{ subtract(childItem.list[0].value3, childItem.list[1].value3) }}</td>
+                <td>{{ subtract(childItem.list[0].value4, childItem.list[1].value4) }}%</td>
+              </tr>
+            </template>
+          </table>
+        </el-card>
+      </el-col>
+      <div v-if="data.length === 0" style="text-align: center; line-height: 50px; color: #909399;">暂无数据</div>
+    </el-row>
 
     <!--编辑界面-->
     <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="1000px">
@@ -165,23 +188,12 @@ export default {
       tag_list: [],
       tag_sub_list: [],
       platform_list: [],
-      page: 1,
-      pageSize: 20,
       total: 0
     }
   },
   methods: {
-    handleCurrentChange(val) {
-      this.page = val
-      this.getList()
-    },
-    handleSizeChange(val) {
-      this.pageSize = val
-      this.getList()
-    },
     // 搜索方法
     handleSearch() {
-      this.page = 1
       this.getList()
     },
     changePid() {
@@ -189,6 +201,24 @@ export default {
     },
     changePtagId() {
       this.editForm.tag_id = ''
+    },
+    getTagName(id) {
+      for (const item of this.tag_list) {
+        if (item.value === id) {
+          return item.label
+        }
+      }
+
+      return ''
+    },
+    getSubTagName(id) {
+      for (const item of this.tag_sub_list) {
+        if (item.id === id) {
+          return item.name
+        }
+      }
+
+      return ''
     },
     getName(value) {
       for (const item of this.platform_list) {
@@ -198,6 +228,19 @@ export default {
       }
 
       return ''
+    },
+    getClass(value1, value2) {
+      if (parseFloat(value1) > parseFloat(value2)) {
+        return 'td-green'
+      }
+      if (parseFloat(value1) < parseFloat(value2)) {
+        return 'td-orange'
+      }
+      return ''
+    },
+    subtract(value1, value2) {
+      const value = parseFloat(value1) - parseFloat(value2)
+      return value.toFixed(2)
     },
     createData() {
       this.$refs.form.validate(valid => {
@@ -229,7 +272,12 @@ export default {
                 type: 'success'
               })
               this.dialogFormVisible = false
-              this.getList()
+              for (const index in this.data) {
+                if (this.data[index].id === this.editForm.id) {
+                  this.data[index] = Object.assign(this.data[index], this.editForm)
+                  break
+                }
+              }
             }
           }).catch(() => { this.editIsLoading = false })
         }
@@ -295,7 +343,13 @@ export default {
               message: '操作成功',
               type: 'success'
             })
-            this.getList()
+            // 删除
+            for (const index in this.data) {
+              if (this.data[index].id === row.id) {
+                this.data.splice(index, 1)
+                break
+              }
+            }
           }
         }).catch(() => {})
       }).catch(() => {})
@@ -304,10 +358,11 @@ export default {
       this.dialogFormVisible = false
       this.$refs['form'].resetFields()
     },
+    load() {
+      // this.getList()
+    },
     getList() {
       const params = Object.assign({}, this.filters)
-      params.page = this.page
-      params.pageSize = this.pageSize
       this.loading = true
       list(params).then(res => {
         this.loading = false
@@ -327,3 +382,33 @@ export default {
   }
 }
 </script>
+
+<style>
+.table-box {
+  width: 100%;
+  border: 1px solid #dcdfe6;
+  border-bottom: none;
+  border-radius: 3px;
+}
+.table-box tr {
+  line-height: 30px;
+}
+.table-box tr td {
+  border-right: 1px solid #dcdfe6;
+  border-bottom: 1px solid #dcdfe6;
+  width: 20%;
+  text-align: center;
+  font-size: 14px;
+}
+.table-box tr td:last-child {
+  border-right: none;
+}
+.td-green {
+  background-color: #67C23A;
+  padding: 2px 5px;
+}
+.td-orange {
+  background-color: orange;
+  padding: 2px 5px;
+}
+</style>
