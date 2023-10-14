@@ -39,7 +39,7 @@
       </el-col>
     </el-row>
 
-    <el-row :gutter="20" v-infinite-scroll="load" infinite-scroll-distance="20" style="height: calc(100vh - 200px); overflow: auto;">
+    <el-row :gutter="20" v-infinite-scroll="load" infinite-scroll-disabled="disabled" infinite-scroll-distance="20" style="height: calc(100vh - 200px); overflow: auto;">
       <el-col :span="12" v-for="item in data" :key="item.id">
         <el-card class="box-card" style="margin-bottom: 20px;">
           <div slot="header" class="clearfix">
@@ -87,8 +87,9 @@
           </table>
         </el-card>
       </el-col>
-      <div v-if="loading && data.length > 0" style="text-align: center; color: #909399;">加载中...</div>
-      <div v-if="!loading && data.length === 0" style="text-align: center; line-height: 50px; color: #909399;">暂无数据</div>
+      <el-col :span="24" v-if="loading && data.length > 0" style="text-align: center; color: #909399;">加载中...</el-col>
+      <el-col :span="24" v-if="!loading && data.length > 0 && noMore" style="text-align: center; color: #909399;">没有更多了</el-col>
+      <el-col :span="24" v-if="!loading && data.length === 0" style="text-align: center; line-height: 50px; color: #909399;">暂无数据</el-col>
     </el-row>
 
     <!--编辑界面-->
@@ -368,13 +369,14 @@ export default {
       this.dialogFormVisible = false
       this.$refs['form'].resetFields()
     },
+
     load() {
       if (this.data.length === 0) {
         this.id = ''
       } else {
         this.id = this.data[this.data.length - 1].id
       }
-      alert(1)
+      this.getList()
     },
     getList() {
       const params = Object.assign({}, this.filters)
@@ -384,12 +386,26 @@ export default {
         this.loading = false
         if (res.code === 0) {
           this.total = res.total
-          this.data = res.data
           this.tag_list = res.tag_list
           this.tag_sub_list = res.tag_sub_list
           this.platform_list = res.platform_list
+          if (params.id === '') {
+            this.data = res.data
+          } else {
+            for (const item of res.data) {
+              this.data.push(item)
+            }
+          }
         }
       }).catch(() => { this.loading = false })
+    }
+  },
+  computed: {
+    noMore() {
+      return this.data.length >= this.total
+    },
+    disabled() {
+      return this.loading || this.noMore
     }
   },
   mounted() {
