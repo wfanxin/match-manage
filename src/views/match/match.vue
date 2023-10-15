@@ -35,57 +35,58 @@
           <el-form-item>
             <el-button type="primary" @click="handleAdd">添加</el-button>
           </el-form-item>
+          <el-form-item style="float: right;">
+            <el-button type="primary" @click="handleTogether">选中比赛展示</el-button>
+          </el-form-item>
         </el-form>
       </el-col>
     </el-row>
 
     <el-row :gutter="20" v-infinite-scroll="load" infinite-scroll-disabled="disabled" infinite-scroll-distance="20" style="height: calc(100vh - 200px); overflow: auto;">
       <el-col :span="12" v-for="item in data" :key="item.id">
-        <el-card class="box-card" style="margin-bottom: 20px;">
-          <div slot="header" class="clearfix">
-            <span>{{ getSubTagName(item.tag_id) }}<span style="font-size: 12px; color: #909399;">({{ getTagName(item.ptag_id) }})</span></span>
-            <el-button style="float: right; padding: 3px 0; color: #F56C6C;" type="text" @click="handleDel(item)">删除</el-button>
-            <div style="float: right; padding: 3px 5px; color: #DCDFE6;">|</div>
-            <el-button style="float: right; padding: 3px 0;" type="text" @click="handleEdit(item)">修改</el-button>
-          </div>
-          <table border="0" cellspacing="0" class="table-box">
-            <tr v-if="item.match_result.indexOf('让') !== -1">
-              <td class="td-black">{{ item.match_play }}</td>
-              <td class="td-black">{{ item.match_score }}</td>
-              <td class="td-black">{{ item.match_result }}</td>
-              <td class="td-black">{{ item.match_half_audience }}</td>
-              <td class="td-black">{{ item.match_type }}</td>
+        <div class="table-header">
+          <span v-if="checkShow"><el-checkbox v-model="item.checked" :label="getSubTagName(item.tag_id)"></el-checkbox><span style="font-size: 12px; color: #909399;">({{ getTagName(item.ptag_id) }})</span></span>
+          <span style="float: right; padding: 3px 0; color: #F56C6C; cursor: pointer;" type="text" @click="handleDel(item)">删除</span>
+          <div style="float: right; padding: 3px 5px; color: #DCDFE6;">|</div>
+          <span style="float: right; padding: 3px 0; color: #21BAA9; cursor: pointer;" type="text" @click="handleEdit(item)">修改</span>
+        </div>
+        <table border="0" cellspacing="0" class="table-box">
+          <tr v-if="item.match_result.indexOf('让') !== -1">
+            <td class="td-black">{{ item.match_play }}</td>
+            <td class="td-black">{{ item.match_score }}</td>
+            <td class="td-black">{{ item.match_result }}</td>
+            <td class="td-black">{{ item.match_half_audience }}</td>
+            <td class="td-black">{{ item.match_type }}</td>
+          </tr>
+          <tr v-else>
+            <td class="td-gray">{{ item.match_play }}</td>
+            <td class="td-gray">{{ item.match_score }}</td>
+            <td class="td-gray">{{ item.match_result }}</td>
+            <td class="td-gray">{{ item.match_half_audience }}</td>
+            <td class="td-gray">{{ item.match_type }}</td>
+          </tr>
+          <template v-for="(childItem, childIndex) in item.match_data">
+            <tr :key="childIndex + '-1'">
+              <td rowspan="3">{{ getName(childItem.value) }}</td>
+              <td>{{ childItem.list[0].value1 }}</td>
+              <td>{{ childItem.list[0].value2 }}</td>
+              <td>{{ childItem.list[0].value3 }}</td>
+              <td>{{ childItem.list[0].value4 }}</td>
             </tr>
-            <tr v-else>
-              <td class="td-gray">{{ item.match_play }}</td>
-              <td class="td-gray">{{ item.match_score }}</td>
-              <td class="td-gray">{{ item.match_result }}</td>
-              <td class="td-gray">{{ item.match_half_audience }}</td>
-              <td class="td-gray">{{ item.match_type }}</td>
+            <tr :key="childIndex + '-2'">
+              <td><span :class="getClass(childItem.list[0].value1, childItem.list[1].value1)">{{ childItem.list[1].value1 }}</span></td>
+              <td><span :class="getClass(childItem.list[0].value2, childItem.list[1].value2)">{{ childItem.list[1].value2 }}</span></td>
+              <td><span :class="getClass(childItem.list[0].value3, childItem.list[1].value3)">{{ childItem.list[1].value3 }}</span></td>
+              <td>{{ childItem.list[1].value4 }}</td>
             </tr>
-            <template v-for="(childItem, childIndex) in item.match_data">
-              <tr :key="childIndex + '-1'">
-                <td rowspan="3">{{ getName(childItem.value) }}</td>
-                <td>{{ childItem.list[0].value1 }}</td>
-                <td>{{ childItem.list[0].value2 }}</td>
-                <td>{{ childItem.list[0].value3 }}</td>
-                <td>{{ childItem.list[0].value4 }}</td>
-              </tr>
-              <tr :key="childIndex + '-2'">
-                <td><span :class="getClass(childItem.list[0].value1, childItem.list[1].value1)">{{ childItem.list[1].value1 }}</span></td>
-                <td><span :class="getClass(childItem.list[0].value2, childItem.list[1].value2)">{{ childItem.list[1].value2 }}</span></td>
-                <td><span :class="getClass(childItem.list[0].value3, childItem.list[1].value3)">{{ childItem.list[1].value3 }}</span></td>
-                <td>{{ childItem.list[1].value4 }}</td>
-              </tr>
-              <tr :key="childIndex + '-3'">
-                <td>{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</td>
-                <td>{{ subtract(childItem.list[0].value2, childItem.list[1].value2) }}</td>
-                <td>{{ subtract(childItem.list[0].value3, childItem.list[1].value3) }}</td>
-                <td>{{ subtract(childItem.list[0].value4, childItem.list[1].value4) }}%</td>
-              </tr>
-            </template>
-          </table>
-        </el-card>
+            <tr :key="childIndex + '-3'">
+              <td>{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</td>
+              <td>{{ subtract(childItem.list[0].value2, childItem.list[1].value2) }}</td>
+              <td>{{ subtract(childItem.list[0].value3, childItem.list[1].value3) }}</td>
+              <td>{{ subtract(childItem.list[0].value4, childItem.list[1].value4) }}%</td>
+            </tr>
+          </template>
+        </table>
       </el-col>
       <el-col :span="24" v-if="loading && data.length > 0" style="text-align: center; color: #909399;">加载中...</el-col>
       <el-col :span="24" v-if="!loading && data.length > 0 && noMore" style="text-align: center; color: #909399;">没有更多了</el-col>
@@ -164,6 +165,54 @@
         <el-button v-else type="primary" @click="updateData" :loading="editIsLoading">修改</el-button>
       </div>
     </el-dialog>
+
+    <!-- 对比界面 -->
+    <el-dialog title="选中比赛展示" :visible.sync="dialogTableVisible" :close-on-click-modal="false" width="90%" top="20px">
+      <el-row :gutter="20">
+        <el-col :span="8" v-for="item in together_list" :key="item.id">
+          <div class="table-header">
+            <span>{{ getSubTagName(item.tag_id) }}<span style="font-size: 12px; color: #909399;">({{ getTagName(item.ptag_id) }})</span></span>
+          </div>
+          <table border="0" cellspacing="0" class="table-box">
+            <tr v-if="item.match_result.indexOf('让') !== -1">
+              <td class="td-black">{{ item.match_play }}</td>
+              <td class="td-black">{{ item.match_score }}</td>
+              <td class="td-black">{{ item.match_result }}</td>
+              <td class="td-black">{{ item.match_half_audience }}</td>
+              <td class="td-black">{{ item.match_type }}</td>
+            </tr>
+            <tr v-else>
+              <td class="td-gray">{{ item.match_play }}</td>
+              <td class="td-gray">{{ item.match_score }}</td>
+              <td class="td-gray">{{ item.match_result }}</td>
+              <td class="td-gray">{{ item.match_half_audience }}</td>
+              <td class="td-gray">{{ item.match_type }}</td>
+            </tr>
+            <template v-for="(childItem, childIndex) in item.match_data">
+              <tr :key="childIndex + '-1'">
+                <td rowspan="3">{{ getName(childItem.value) }}</td>
+                <td>{{ childItem.list[0].value1 }}</td>
+                <td>{{ childItem.list[0].value2 }}</td>
+                <td>{{ childItem.list[0].value3 }}</td>
+                <td>{{ childItem.list[0].value4 }}</td>
+              </tr>
+              <tr :key="childIndex + '-2'">
+                <td><span :class="getClass(childItem.list[0].value1, childItem.list[1].value1)">{{ childItem.list[1].value1 }}</span></td>
+                <td><span :class="getClass(childItem.list[0].value2, childItem.list[1].value2)">{{ childItem.list[1].value2 }}</span></td>
+                <td><span :class="getClass(childItem.list[0].value3, childItem.list[1].value3)">{{ childItem.list[1].value3 }}</span></td>
+                <td>{{ childItem.list[1].value4 }}</td>
+              </tr>
+              <tr :key="childIndex + '-3'">
+                <td>{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</td>
+                <td>{{ subtract(childItem.list[0].value2, childItem.list[1].value2) }}</td>
+                <td>{{ subtract(childItem.list[0].value3, childItem.list[1].value3) }}</td>
+                <td>{{ subtract(childItem.list[0].value4, childItem.list[1].value4) }}%</td>
+              </tr>
+            </template>
+          </table>
+        </el-col>
+      </el-row>
+    </el-dialog>
 	</section>
 </template>
 
@@ -192,12 +241,15 @@ export default {
       dialogStatus: '',
       dialogTitle: '',
       editForm: {},
+      checkShow: false,
+      dialogTableVisible: false,
       loading: false,
       id: '',
       data: [],
       tag_list: [],
       tag_sub_list: [],
       platform_list: [],
+      together_list: [],
       total: 0
     }
   },
@@ -206,6 +258,10 @@ export default {
     handleSearch() {
       this.id = ''
       this.getList()
+      this.checkShow = false
+      this.$nextTick(() => {
+        this.checkShow = true
+      })
     },
     changePid() {
       this.filters.ids = []
@@ -365,11 +421,23 @@ export default {
         }).catch(() => {})
       }).catch(() => {})
     },
+    handleTogether() {
+      this.together_list = []
+      for (const item of this.data) {
+        if (item.checked === true) {
+          this.together_list.push(item)
+        }
+      }
+      if (this.together_list.length === 0) {
+        this.$message.error('请先选择比赛')
+        return false
+      }
+      this.dialogTableVisible = true
+    },
     resetForm() {
       this.dialogFormVisible = false
       this.$refs['form'].resetFields()
     },
-
     load() {
       if (this.data.length === 0) {
         this.id = ''
@@ -416,11 +484,23 @@ export default {
 </script>
 
 <style>
+.table-header {
+  border: 1px solid #dcdfe6;
+  line-height: 50px;
+  padding: 0 10px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
 .table-box {
+  position: relative;
+  top: -3px;
   width: 100%;
   border: 1px solid #dcdfe6;
   border-bottom: none;
-  border-radius: 3px;
+  border-top: none;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  margin-bottom: 20px;
 }
 .table-box tr {
   line-height: 30px;
