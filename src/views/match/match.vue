@@ -43,7 +43,7 @@
     </el-row>
 
     <el-row :gutter="20" v-infinite-scroll="load" infinite-scroll-disabled="disabled" infinite-scroll-distance="20" style="height: calc(100vh - 200px); overflow: auto;">
-      <el-col :span="12" v-for="item in data" :key="item.id">
+      <el-col :span="12" v-for="item in data" :key="item.id" style="height: 665px;">
         <div class="table-header">
           <span v-if="checkShow"><el-checkbox v-model="item.checked" :label="getSubTagName(item.tag_id)"></el-checkbox><span style="font-size: 12px; color: #909399;">({{ getTagName(item.ptag_id) }})</span></span>
           <span style="float: right; padding: 3px 0; color: #F56C6C; cursor: pointer;" type="text" @click="handleDel(item)">删除</span>
@@ -51,6 +51,13 @@
           <span style="float: right; padding: 3px 0; color: #21BAA9; cursor: pointer;" type="text" @click="handleEdit(item)">修改</span>
         </div>
         <table border="0" cellspacing="0" class="table-box">
+          <tr>
+            <td class="td-black td-bold">比赛场次</td>
+            <td class="td-black td-bold">比分</td>
+            <td class="td-black td-bold">比赛结果</td>
+            <td class="td-black td-bold">半全场</td>
+            <td class="td-black td-bold">比赛类型</td>
+          </tr>
           <tr v-if="item.match_result.indexOf('让') !== -1">
             <td class="td-black">{{ item.match_play }}</td>
             <td class="td-black">{{ item.match_score }}</td>
@@ -65,19 +72,26 @@
             <td class="td-gray">{{ item.match_half_audience }}</td>
             <td class="td-gray">{{ item.match_type }}</td>
           </tr>
+          <tr>
+            <td class="td-black td-bold">公司</td>
+            <td class="td-black td-bold">胜</td>
+            <td class="td-black td-bold">平</td>
+            <td class="td-black td-bold">负</td>
+            <td class="td-black td-bold">赔付率</td>
+          </tr>
           <template v-for="(childItem, childIndex) in item.match_data">
             <tr :key="childIndex + '-1'">
               <td rowspan="3">{{ getName(childItem.value) }}</td>
               <td>{{ childItem.list[0].value1 }}</td>
               <td>{{ childItem.list[0].value2 }}</td>
               <td>{{ childItem.list[0].value3 }}</td>
-              <td>{{ childItem.list[0].value4 }}</td>
+              <td>{{ childItem.list[0].value4 }}%</td>
             </tr>
             <tr :key="childIndex + '-2'">
               <td><span :class="getClass(childItem.list[0].value1, childItem.list[1].value1)">{{ childItem.list[1].value1 }}</span></td>
               <td><span :class="getClass(childItem.list[0].value2, childItem.list[1].value2)">{{ childItem.list[1].value2 }}</span></td>
               <td><span :class="getClass(childItem.list[0].value3, childItem.list[1].value3)">{{ childItem.list[1].value3 }}</span></td>
-              <td>{{ childItem.list[1].value4 }}</td>
+              <td>{{ childItem.list[1].value4 }}%</td>
             </tr>
             <tr :key="childIndex + '-3'">
               <td>{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</td>
@@ -108,7 +122,7 @@
             </el-select>
           </el-col>
           <el-col :span="5">
-            <el-select v-model="editForm.tag_id" filterable placeholder="请选择标签子类" size="mini" style="width: 100%;">
+            <el-select v-model="editForm.tag_id" multiple collapse-tags placeholder="请选择标签子类" size="mini" style="width: 100%;">
               <el-option
                 v-for="item in tag_sub_list.filter(item => { return item.pid === editForm.ptag_id })"
                 :key="item.id"
@@ -139,7 +153,10 @@
 
         <el-row :gutter="10" v-for="(item, index) in editForm.match_data" :key="index">
           <el-col :span="4" style="position: relative; top: 10px;">
-            <div style="border: 1px solid #dcdfe6; line-height: 65px; text-align: center; border-radius: 5px;">{{ getName(item.value) }}</div>
+            <div style="border: 1px solid #dcdfe6; line-height: 65px; text-align: center; border-radius: 5px;">
+              {{ getName(item.value) }}
+              <i class="el-icon-delete" style="cursor: pointer;" @click="deleteMatch(item.value)"></i>
+            </div>
           </el-col>
           <el-col :span="20">
             <el-row :gutter="10" v-for="(subItem, subIndex) in item.list" :key="subIndex" style="margin-top: 10px;">
@@ -153,7 +170,7 @@
                 <el-input v-model="subItem.value3" placeholder="请输入" size="mini"></el-input>
               </el-col>
               <el-col :span="6">
-                <el-input v-model="subItem.value4" placeholder="请输入" size="mini"></el-input>
+                <el-input v-model="subItem.value4" placeholder="请输入" size="mini"><template slot="append">%</template></el-input>
               </el-col>
             </el-row>
           </el-col>
@@ -169,11 +186,18 @@
     <!-- 对比界面 -->
     <el-dialog title="选中比赛展示" :visible.sync="dialogTableVisible" :close-on-click-modal="false" width="90%" top="20px">
       <el-row :gutter="20">
-        <el-col :span="8" v-for="item in together_list" :key="item.id">
+        <el-col :span="8" v-for="item in together_list" :key="item.id" style="height: 665px;">
           <div class="table-header">
             <span>{{ getSubTagName(item.tag_id) }}<span style="font-size: 12px; color: #909399;">({{ getTagName(item.ptag_id) }})</span></span>
           </div>
           <table border="0" cellspacing="0" class="table-box">
+            <tr>
+              <td class="td-black td-bold">比赛场次</td>
+              <td class="td-black td-bold">比分</td>
+              <td class="td-black td-bold">比赛结果</td>
+              <td class="td-black td-bold">半全场</td>
+              <td class="td-black td-bold">比赛类型</td>
+            </tr>
             <tr v-if="item.match_result.indexOf('让') !== -1">
               <td class="td-black">{{ item.match_play }}</td>
               <td class="td-black">{{ item.match_score }}</td>
@@ -188,19 +212,26 @@
               <td class="td-gray">{{ item.match_half_audience }}</td>
               <td class="td-gray">{{ item.match_type }}</td>
             </tr>
+            <tr>
+              <td class="td-black td-bold">公司</td>
+              <td class="td-black td-bold">胜</td>
+              <td class="td-black td-bold">平</td>
+              <td class="td-black td-bold">负</td>
+              <td class="td-black td-bold">赔付率</td>
+            </tr>
             <template v-for="(childItem, childIndex) in item.match_data">
               <tr :key="childIndex + '-1'">
                 <td rowspan="3">{{ getName(childItem.value) }}</td>
                 <td>{{ childItem.list[0].value1 }}</td>
                 <td>{{ childItem.list[0].value2 }}</td>
                 <td>{{ childItem.list[0].value3 }}</td>
-                <td>{{ childItem.list[0].value4 }}</td>
+                <td>{{ childItem.list[0].value4 }}%</td>
               </tr>
               <tr :key="childIndex + '-2'">
                 <td><span :class="getClass(childItem.list[0].value1, childItem.list[1].value1)">{{ childItem.list[1].value1 }}</span></td>
                 <td><span :class="getClass(childItem.list[0].value2, childItem.list[1].value2)">{{ childItem.list[1].value2 }}</span></td>
                 <td><span :class="getClass(childItem.list[0].value3, childItem.list[1].value3)">{{ childItem.list[1].value3 }}</span></td>
-                <td>{{ childItem.list[1].value4 }}</td>
+                <td>{{ childItem.list[1].value4 }}%</td>
               </tr>
               <tr :key="childIndex + '-3'">
                 <td>{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</td>
@@ -279,13 +310,14 @@ export default {
       return ''
     },
     getSubTagName(id) {
+      const name = []
       for (const item of this.tag_sub_list) {
-        if (item.id === id) {
-          return item.name
+        if (id.indexOf(item.id) !== -1) {
+          name.push(item.name)
         }
       }
 
-      return ''
+      return name.join('、')
     },
     getName(value) {
       for (const item of this.platform_list) {
@@ -372,7 +404,7 @@ export default {
       }
       this.editForm = {
         ptag_id: '',
-        tag_id: '',
+        tag_id: [],
         match_play: '',
         match_score: '',
         match_result: '',
@@ -419,6 +451,21 @@ export default {
             }
           }
         }).catch(() => {})
+      }).catch(() => {})
+    },
+    deleteMatch(value) {
+      this.$confirm('确认删除【' + this.getName(value) + '】吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const match_data = []
+        for (const item of this.editForm.match_data) {
+          if (item.value !== value) {
+            match_data.push(item)
+          }
+        }
+        this.editForm.match_data = match_data
       }).catch(() => {})
     },
     handleTogether() {
@@ -528,5 +575,9 @@ export default {
 }
 .td-gray {
   color: gray;
+}
+.td-bold {
+  color: #606266;
+  font-weight: bold;
 }
 </style>
