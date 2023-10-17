@@ -4,7 +4,7 @@
     <el-row >
       <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
         <el-form :inline="true" :model="filters" @submit.native.prevent>
-          <el-form-item>
+          <!-- <el-form-item>
             <el-select v-model="filters.pid" filterable clearable placeholder="请选择标签大类" @change="changePid">
               <el-option
                 v-for="item in tag_list"
@@ -28,6 +28,9 @@
                 :value="item.id">
               </el-option>
             </el-select>
+          </el-form-item> -->
+          <el-form-item>
+            <el-cascader v-model="filters.ids" :options="options" :props="props" collapse-tags clearable placeholder="请选择标签" style="width: 300px;"></el-cascader>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="handleSearch">搜索</el-button>
@@ -45,7 +48,7 @@
     <el-row :gutter="20" v-infinite-scroll="load" infinite-scroll-disabled="disabled" infinite-scroll-distance="20" style="height: calc(100vh - 200px); overflow: auto;">
       <el-col :span="12" v-for="item in data" :key="item.id" style="height: 665px;">
         <div class="table-header">
-          <span v-if="checkShow"><el-checkbox v-model="item.checked" :label="getSubTagName(item.tag_id)"></el-checkbox><span style="font-size: 12px; color: #909399;">({{ getTagName(item.ptag_id) }})</span></span>
+          <span v-if="checkShow"><el-checkbox v-model="item.checked" :label="getSubTagName(item.tag_id)"></el-checkbox><span style="font-size: 12px; color: #909399;"></span></span>
           <span style="float: right; padding: 3px 0; color: #F56C6C; cursor: pointer;" type="text" @click="handleDel(item)">删除</span>
           <div style="float: right; padding: 3px 5px; color: #DCDFE6;">|</div>
           <span style="float: right; padding: 3px 0; color: #21BAA9; cursor: pointer;" type="text" @click="handleEdit(item)">修改</span>
@@ -111,7 +114,7 @@
     <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="1000px">
       <el-form :model="editForm" label-width="80px" ref="form" style="width: 100%">
         <el-row :gutter="10">
-          <el-col :span="4">
+          <!-- <el-col :span="4">
             <el-select v-model="editForm.ptag_id" filterable placeholder="请选择标签大类" size="mini" @change="changePtagId">
               <el-option
                 v-for="item in tag_list"
@@ -130,6 +133,9 @@
                 :value="item.id">
               </el-option>
             </el-select>
+          </el-col> -->
+          <el-col :span="9">
+            <el-cascader size="mini" v-model="editForm.tag_id" :options="options" :props="props" collapse-tags clearable placeholder="请选择标签" style="width: 100%;"></el-cascader>
           </el-col>
         </el-row>
 
@@ -188,7 +194,7 @@
       <el-row :gutter="20">
         <el-col :span="8" v-for="item in together_list" :key="item.id" style="height: 665px;">
           <div class="table-header">
-            <span>{{ getSubTagName(item.tag_id) }}<span style="font-size: 12px; color: #909399;">({{ getTagName(item.ptag_id) }})</span></span>
+            <span>{{ getSubTagName(item.tag_id) }}<span style="font-size: 12px; color: #909399;"></span></span>
           </div>
           <table border="0" cellspacing="0" class="table-box">
             <tr>
@@ -266,6 +272,8 @@ export default {
         pid: '',
         ids: []
       },
+      props: { multiple: true },
+      options: [],
       addIsLoading: false,
       editIsLoading: false,
       dialogFormVisible: false,
@@ -312,8 +320,10 @@ export default {
     getSubTagName(id) {
       const name = []
       for (const item of this.tag_sub_list) {
-        if (id.indexOf(item.id) !== -1) {
-          name.push(item.name)
+        for (const id_arr of id) {
+          if (id_arr.length === 2 && id_arr[1] === item.id) {
+            name.push(item.name)
+          }
         }
       }
 
@@ -481,6 +491,25 @@ export default {
       }
       this.dialogTableVisible = true
     },
+    setOptions() {
+      this.options = []
+      for (const tag of this.tag_list) {
+        const children = []
+        for (const tag_sub of this.tag_sub_list) {
+          if (tag.value === tag_sub.pid) {
+            children.push({
+              value: tag_sub.id,
+              label: tag_sub.name
+            })
+          }
+        }
+        this.options.push({
+          value: tag.value,
+          label: tag.label,
+          children: children
+        })
+      }
+    },
     resetForm() {
       this.dialogFormVisible = false
       this.$refs['form'].resetFields()
@@ -504,6 +533,7 @@ export default {
           this.tag_list = res.tag_list
           this.tag_sub_list = res.tag_sub_list
           this.platform_list = res.platform_list
+          this.setOptions()
           if (params.id === '') {
             this.data = res.data
           } else {
@@ -579,5 +609,8 @@ export default {
 .td-bold {
   color: #606266;
   font-weight: bold;
+}
+.el-cascader-menu {
+  overflow: hidden;
 }
 </style>
