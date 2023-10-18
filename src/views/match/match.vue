@@ -94,13 +94,13 @@
               <td><span :class="getClass(childItem.list[0].value1, childItem.list[1].value1)">{{ childItem.list[1].value1 }}</span></td>
               <td><span :class="getClass(childItem.list[0].value2, childItem.list[1].value2)">{{ childItem.list[1].value2 }}</span></td>
               <td><span :class="getClass(childItem.list[0].value3, childItem.list[1].value3)">{{ childItem.list[1].value3 }}</span></td>
-              <td>{{ childItem.list[1].value4 }}%</td>
+              <td><span :class="getClassP(childItem.list[0].value4, childItem.list[1].value4)">{{ childItem.list[1].value4 }}%</span></td>
             </tr>
             <tr :key="childIndex + '-3'">
-              <td>{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</td>
-              <td>{{ subtract(childItem.list[0].value2, childItem.list[1].value2) }}</td>
-              <td>{{ subtract(childItem.list[0].value3, childItem.list[1].value3) }}</td>
-              <td>{{ subtract(childItem.list[0].value4, childItem.list[1].value4) }}%</td>
+              <td><span :class="getSubtractClass(childItem.list[0].value1, childItem.list[1].value1)">{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</span></td>
+              <td><span :class="getSubtractClass(childItem.list[0].value2, childItem.list[1].value2)">{{ subtract(childItem.list[0].value2, childItem.list[1].value2) }}</span></td>
+              <td><span :class="getSubtractClass(childItem.list[0].value3, childItem.list[1].value3)">{{ subtract(childItem.list[0].value3, childItem.list[1].value3) }}</span></td>
+              <td><span>{{ subtract(childItem.list[0].value4, childItem.list[1].value4) }}%</span></td>
             </tr>
           </template>
         </table>
@@ -237,13 +237,13 @@
                 <td><span :class="getClass(childItem.list[0].value1, childItem.list[1].value1)">{{ childItem.list[1].value1 }}</span></td>
                 <td><span :class="getClass(childItem.list[0].value2, childItem.list[1].value2)">{{ childItem.list[1].value2 }}</span></td>
                 <td><span :class="getClass(childItem.list[0].value3, childItem.list[1].value3)">{{ childItem.list[1].value3 }}</span></td>
-                <td>{{ childItem.list[1].value4 }}%</td>
+                <td><span :class="getClassP(childItem.list[0].value4, childItem.list[1].value4)">{{ childItem.list[1].value4 }}%</span></td>
               </tr>
               <tr :key="childIndex + '-3'">
-                <td>{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</td>
-                <td>{{ subtract(childItem.list[0].value2, childItem.list[1].value2) }}</td>
-                <td>{{ subtract(childItem.list[0].value3, childItem.list[1].value3) }}</td>
-                <td>{{ subtract(childItem.list[0].value4, childItem.list[1].value4) }}%</td>
+                <td><span :class="getSubtractClass(childItem.list[0].value1, childItem.list[1].value1)">{{ subtract(childItem.list[0].value1, childItem.list[1].value1) }}</span></td>
+                <td><span :class="getSubtractClass(childItem.list[0].value2, childItem.list[1].value2)">{{ subtract(childItem.list[0].value2, childItem.list[1].value2) }}</span></td>
+                <td><span :class="getSubtractClass(childItem.list[0].value3, childItem.list[1].value3)">{{ subtract(childItem.list[0].value3, childItem.list[1].value3) }}</span></td>
+                <td><span>{{ subtract(childItem.list[0].value4, childItem.list[1].value4) }}%</span></td>
               </tr>
             </template>
           </table>
@@ -347,9 +347,27 @@ export default {
       }
       return ''
     },
+    getClassP(value1, value2) {
+      if (parseFloat(value1) < parseFloat(value2)) {
+        return 'td-green'
+      }
+      if (parseFloat(value1) > parseFloat(value2)) {
+        return 'td-orange'
+      }
+      return ''
+    },
     subtract(value1, value2) {
-      const value = parseFloat(value1) - parseFloat(value2)
+      const value = parseFloat(value2) - parseFloat(value1)
       return value.toFixed(2)
+    },
+    getSubtractClass(value1, value2) {
+      if (this.subtract(value1, value2) > 0) {
+        return 'normal-red'
+      }
+      if (this.subtract(value1, value2) < 0) {
+        return 'normal-green'
+      }
+      return ''
     },
     createData() {
       this.$refs.form.validate(valid => {
@@ -609,6 +627,14 @@ export default {
 .td-bold {
   color: #606266;
   font-weight: bold;
+}
+.normal-red {
+  background-color: #F56C6C;
+  padding: 2px 5px;
+}
+.normal-green {
+  background-color: #1a9f1a;
+  padding: 2px 5px;
 }
 .el-cascader-menu {
   overflow: hidden;
