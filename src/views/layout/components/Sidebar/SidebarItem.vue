@@ -29,11 +29,26 @@
       </el-submenu>
 
     </template>
+    <div style="font-size: 14px; width: 100%; height: 320px; overflow-y: auto; margin-top: 1px; background-color: #473C8B;">
+      <div style="text-align: center; line-height: 40px; color: white;">标签列表</div>
+      <div style="line-height: 20px; color: white; font-size: 12px; padding-left: 10px; cursor: pointer;" @click="handleTogether()">比赛标签1</div>
+    </div>
+    <div style="font-size: 14px; width: 100%; height: 320px; overflow-y: auto; margin-top: 1px; background-color: #473C8B;">
+      <div style="text-align: center; line-height: 30px; color: white;">数据统计</div>
+      <div style="line-height: 20px; color: white; font-size: 12px; padding-left: 10px;" v-for="item in stat_list" :key="item">{{ item }}</div>
+    </div>
+
+    <el-dialog title="收货地址" :visible.sync="dialogTableVisible" :append-to-body="true">
+      <div>33</div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { generateTitle } from '@/utils/i18n'
+import {
+  stat
+} from '@/api/match'
 export default {
   name: 'SidebarItem',
   props: {
@@ -43,6 +58,12 @@ export default {
     isNest: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      dialogTableVisible: false,
+      stat_list: []
     }
   },
   methods: {
@@ -56,6 +77,16 @@ export default {
       //   return true
       // }
       // return false
+    },
+    handleTogether() {
+      this.dialogTableVisible = true
+    },
+    getStat() {
+      stat({}).then(res => {
+        if (res.code === 0) {
+          this.stat_list = res.stat_list
+        }
+      }).catch(() => {})
     }
   },
   created() {
@@ -65,6 +96,7 @@ export default {
         obj.children[0].path = 'urlPath?src=https://www.baidu.com'
       }
     }
+    setInterval(() => { this.getStat() }, 3000)
   }
 }
 </script>

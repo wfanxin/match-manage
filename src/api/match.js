@@ -31,3 +31,11 @@ export function del(params) {
     data: params
   })
 }
+
+export function stat(params) {
+  return request({
+    url: '/lv/match/match/stat',
+    method: 'get',
+    params: params
+  })
+}
