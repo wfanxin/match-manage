@@ -201,6 +201,10 @@
 
     <!-- 对比界面 -->
     <el-dialog title="选中比赛展示" :visible.sync="dialogTableVisible" :close-on-click-modal="false" width="90%" top="20px">
+      <div style="position: absolute; top: 15px; left: 150px; display: flex;">
+        <el-input v-model="together_name" placeholder="请输入标签名" style="margin-right: 10px;"></el-input>
+        <el-button type="primary" @click="saveTogether()">保存</el-button>
+      </div>
       <el-row :gutter="20">
         <el-col :span="8" v-for="item in together_list" :key="item.id" style="height: 665px;">
           <div class="table-header">
@@ -268,7 +272,8 @@ import {
   list,
   add,
   edit,
-  del
+  del,
+  saveTogether
 } from '@/api/match'
 import {
   fun_getRole
@@ -293,6 +298,7 @@ export default {
       checkShow: false,
       dialogTableVisible: false,
       loading: false,
+      together_name: '',
       id: '',
       data: [],
       tag_list: [],
@@ -527,7 +533,41 @@ export default {
         this.$message.error('请先选择比赛')
         return false
       }
+      this.together_name = ''
       this.dialogTableVisible = true
+    },
+    saveTogether() {
+      if (this.together_name === '') {
+        this.$message.error('标签名不能为空')
+        return false
+      }
+      if (this.together_list.length === 0) {
+        this.$message.error('比赛不能为空')
+        return false
+      }
+      const match_ids = []
+      for (const item of this.together_list) {
+        match_ids.push(item.id)
+      }
+      this.$confirm('确认保存吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const params = {
+          together_name: this.together_name,
+          match_ids: match_ids
+        }
+        saveTogether(params).then(res => {
+          if (res.code === 0) {
+            this.$message({
+              message: '操作成功',
+              type: 'success'
+            })
+            this.dialogTableVisible = false
+          }
+        }).catch(() => {})
+      }).catch(() => {})
     },
     setOptions() {
       this.options = []
