@@ -52,6 +52,8 @@
           <span style="float: right; padding: 3px 0; color: #F56C6C; cursor: pointer;" type="text" @click="handleDel(item)">删除</span>
           <div style="float: right; padding: 3px 5px; color: #DCDFE6;">|</div>
           <span style="float: right; padding: 3px 0; color: #21BAA9; cursor: pointer;" type="text" @click="handleEdit(item)">修改</span>
+          <div style="float: right; padding: 3px 5px; color: #DCDFE6;">|</div>
+          <span style="float: right; padding: 3px 0; color: #409EFF; cursor: pointer;" type="text" @click="handleMirror(item)">镜像</span>
         </div>
         <table border="0" cellspacing="0" class="table-box">
           <tr>
@@ -84,7 +86,7 @@
           </tr>
           <template v-for="(childItem, childIndex) in item.match_data">
             <tr :key="childIndex + '-1'">
-              <td rowspan="3">{{ getName(childItem.value) }}</td>
+              <td rowspan="3">{{ childItem.name }}</td>
               <td>{{ childItem.list[0].value1 }}</td>
               <td>{{ childItem.list[0].value2 }}</td>
               <td>{{ childItem.list[0].value3 }}</td>
@@ -137,6 +139,14 @@
           <el-col :span="9">
             <el-cascader size="mini" v-model="editForm.tag_id" :options="options" :props="props" collapse-tags clearable placeholder="请选择标签" style="width: 100%;"></el-cascader>
           </el-col>
+          <el-col :span="5">
+            是否置顶&nbsp;
+            <el-switch
+              v-model="editForm.is_top"
+              :active-value="1"
+              :inactive-value="0">
+            </el-switch>
+          </el-col>
         </el-row>
 
         <el-row :gutter="10" style="margin-top: 10px;">
@@ -160,8 +170,8 @@
         <el-row :gutter="10" v-for="(item, index) in editForm.match_data" :key="index">
           <el-col :span="4" style="position: relative; top: 10px;">
             <div style="border: 1px solid #dcdfe6; line-height: 65px; text-align: center; border-radius: 5px;">
-              {{ getName(item.value) }}
-              <i class="el-icon-delete" style="cursor: pointer;" @click="deleteMatch(item.value)"></i>
+              <el-input v-model="item.name" placeholder="" size="mini" style="width: 80px;"></el-input>
+              <i class="el-icon-delete" style="cursor: pointer;" @click="deleteMatch(item.value, item.name)"></i>
             </div>
           </el-col>
           <el-col :span="20">
@@ -227,7 +237,7 @@
             </tr>
             <template v-for="(childItem, childIndex) in item.match_data">
               <tr :key="childIndex + '-1'">
-                <td rowspan="3">{{ getName(childItem.value) }}</td>
+                <td rowspan="3">{{ childItem.name }}</td>
                 <td>{{ childItem.list[0].value1 }}</td>
                 <td>{{ childItem.list[0].value2 }}</td>
                 <td>{{ childItem.list[0].value3 }}</td>
@@ -329,15 +339,6 @@ export default {
 
       return name.join('、')
     },
-    getName(value) {
-      for (const item of this.platform_list) {
-        if (item.value === value) {
-          return item.label
-        }
-      }
-
-      return ''
-    },
     getClass(value1, value2) {
       if (parseFloat(value1) > parseFloat(value2)) {
         return 'td-green'
@@ -348,10 +349,10 @@ export default {
       return ''
     },
     getClassP(value1, value2) {
-      if (parseFloat(value1) < parseFloat(value2)) {
+      if (parseFloat(value1) > parseFloat(value2)) {
         return 'td-green'
       }
-      if (parseFloat(value1) > parseFloat(value2)) {
+      if (parseFloat(value1) < parseFloat(value2)) {
         return 'td-orange'
       }
       return ''
@@ -417,6 +418,7 @@ export default {
       for (const item of this.platform_list) {
         match_data.push({
           value: item.value,
+          name: item.label,
           list: [{
             value1: '',
             value2: '',
@@ -433,6 +435,7 @@ export default {
       this.editForm = {
         ptag_id: '',
         tag_id: [],
+        is_top: 0,
         match_play: '',
         match_score: '',
         match_result: '',
@@ -449,6 +452,7 @@ export default {
         id: row.id,
         ptag_id: row.ptag_id,
         tag_id: row.tag_id,
+        is_top: row.is_top,
         match_play: row.match_play,
         match_score: row.match_score,
         match_result: row.match_result,
@@ -481,8 +485,8 @@ export default {
         }).catch(() => {})
       }).catch(() => {})
     },
-    deleteMatch(value) {
-      this.$confirm('确认删除【' + this.getName(value) + '】吗?', '提示', {
+    deleteMatch(value, name) {
+      this.$confirm('确认删除【' + name + '】吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -494,6 +498,22 @@ export default {
           }
         }
         this.editForm.match_data = match_data
+      }).catch(() => {})
+    },
+    handleMirror(row) {
+      this.$confirm('确认镜像吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        for (const item of row.match_data) {
+          const value01 = item.list[0].value1
+          const value11 = item.list[1].value1
+          item.list[0].value1 = item.list[0].value3
+          item.list[1].value1 = item.list[1].value3
+          item.list[0].value3 = value01
+          item.list[1].value3 = value11
+        }
       }).catch(() => {})
     },
     handleTogether() {
@@ -638,5 +658,6 @@ export default {
 }
 .el-cascader-menu {
   overflow: hidden;
+  height: 400px;
 }
 </style>
