@@ -170,7 +170,7 @@
         <el-row :gutter="10" v-for="(item, index) in editForm.match_data" :key="index">
           <el-col :span="4" style="position: relative; top: 10px;">
             <div style="border: 1px solid #dcdfe6; line-height: 65px; text-align: center; border-radius: 5px;">
-              <el-input v-model="item.name" placeholder="" size="mini" style="width: 80px;"></el-input>
+              <el-input v-model="item.name" placeholder="" size="mini" style="width: 80px;" tabindex=-1></el-input>
               <i class="el-icon-delete" style="cursor: pointer;" @click="deleteMatch(item.value, item.name)"></i>
             </div>
           </el-col>
